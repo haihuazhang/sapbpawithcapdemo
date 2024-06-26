@@ -1,0 +1,77 @@
+{
+    "services": {
+        "LaunchPage": {
+            "adapter": {
+                "config": {
+                    "catalogs": [],
+                    "groups": [
+                        {
+                            "id": "PrePayment",
+                            "title": "Test1",
+                            "isPreset": true,
+                            "isVisible": true,
+                            "isGroupLocked": false,
+                            "tiles": [
+                                {
+                                    "id": "cprepaymentpendinginvs-display",
+                                    "tileType": "sap.ushell.ui.tile.StaticTile",
+                                    "properties": {
+                                        "targetURL": "#cprepaymentpendinginvs-display",
+                                        "title": "新規登録画面"
+                                    }
+                                },
+                                {
+                                    "id": "project1-display",
+                                    "tileType": "sap.ushell.ui.tile.StaticTile",
+                                    "properties": {
+                                        "targetURL": "#project1-display",
+                                        "title": "新規登録画面2"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "NavTargetResolution": {
+            "config": {
+                "enableClientSideTargetResolution": true
+            }
+        },
+        "ClientSideTargetResolution": {
+            "adapter": {
+                "config": {
+                    "inbounds": {
+                        "cprepaymentpendinginvs-display": {
+                            "semanticObject": "cprepaymentpendinginvs",
+                            "action": "display",
+                            "signature": {
+                                "parameters": {},
+                                "additionalParameters": "allowed"
+                            },
+                            "resolutionResult": {
+                                "applicationType": "SAPUI5",
+                                "additionalInformation": "SAPUI5.Component=cprepaymentpendinginvs",
+                                "url": "/cprepaymentpendinginvs/webapp"
+                            }
+                        },
+                        "project1-display": {
+                            "semanticObject": "project1",
+                            "action": "display",
+                            "signature": {
+                                "parameters": {},
+                                "additionalParameters": "allowed"
+                            },
+                            "resolutionResult": {
+                                "applicationType": "SAPUI5",
+                                "additionalInformation": "SAPUI5.Component=project1",
+                                "url": "/project1/webapp"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

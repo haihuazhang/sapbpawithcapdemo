@@ -1,0 +1,113 @@
+_schema-version: '3.1'
+ID: demo
+version: 1.0.0-SNAPSHOT
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+modules:
+  - name: demo-srv
+    type: java
+    path: srv
+    parameters:
+      buildpack: sap_java_buildpack_jakarta
+      readiness-health-check-type: http
+      readiness-health-check-http-endpoint: /
+    properties:
+      SPRING_PROFILES_ACTIVE: cloud,sandbox
+      JBP_CONFIG_COMPONENTS: "jres: ['com.sap.xs.java.buildpack.jre.SAPMachineJRE']"
+      JBP_CONFIG_SAP_MACHINE_JRE: '{ version: 17.+ }'
+    build-parameters:
+      builder: custom
+      commands:
+        - mvn clean package -DskipTests=true
+      build-result: target/*-exec.jar
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: demo-db
+      - name: demo-auth
+
+  - name: demo-db-deployer
+    type: hdb
+    path: db
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: custom
+      commands:
+        - npm run build
+    requires:
+      - name: demo-db
+
+  - name: cpapp-destinations
+    type: com.sap.application.content
+    requires:
+      - name: demo-auth
+        parameters:
+          service-key:
+            name: demo-auth-key
+      - name: demoworkflow-html5-repo-host
+        parameters:
+          service-key:
+            name: demoworkflow-html5-repo-host-key
+      - name: demo-srv
+      - name: demoworkflow-destination
+        parameters:
+          content-target: true
+    parameters:
+      content:
+        instance:
+          destinations:
+            - Authentication: OAuth2UserTokenExchange
+              Name: demo-srv
+              TokenServiceInstanceName: demo-auth
+              TokenServiceKeyName: demo-auth-key
+              URL: '~{srv-api/srv-url}'
+              sap.cloud.service: customer.demo
+            - Name: demoworkflow-html5-repo-host
+              ServiceInstanceName: demoworkflow-html5-repo-host
+              ServiceKeyName: demoworkflow-html5-repo-host-key
+              sap.cloud.service: customer.demo
+            - Authentication: OAuth2UserTokenExchange
+              Name: demo-auth
+              ServiceInstanceName: demo-auth
+              ServiceKeyName: demo-auth-key
+              sap.cloud.service: customer.demo
+          existing_destinations_policy: update
+    build-parameters:
+      no-source: true
+
+resources:
+  - name: demo-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: demo-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: demo-${org}-${space}
+        tenant-mode: dedicated
+  - name: workflow 
+      type: org.cloudfoundry.managed-service 
+      parameters:
+          service: process-automation-service
+          service-plan: standard
+  - name: demoworkflow-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+      config:
+        HTML5Runtime_enabled: true
+  - name: demoworkflow-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host

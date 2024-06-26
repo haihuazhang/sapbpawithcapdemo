@@ -1,0 +1,14 @@
+<mvc:View xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m"
+    xmlns:macros="sap.fe.macros" xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:macrosTable="sap.fe.macros.table"
+    controllerName="cprepaymentpendinginvs.ext.main.Attachment">
+    <Page id="Attachment" title="{i18n&gt;AttachTitle}" class="sapUiSmallMargin">
+        <macros:Table id="AttachmentTable"
+            metaPath="to_Attachments/@com.sap.vocabularies.UI.v1.LineItem" headerVisible="true"
+            isSearchable="true" selectionMode="Single" type="ResponsiveTable"
+            variantManagement="None" />
+        <!-- <macros:Table id="Table2"
+        metaPath="to_Attachments/@com.sap.vocabularies.UI.v1.LineItem" headerVisible="true"
+        isSearchable="true" selectionMode="Single" type="ResponsiveTable" variantManagement="None"/> -->
+    </Page>
+</mvc:View>

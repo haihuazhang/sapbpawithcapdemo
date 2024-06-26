@@ -1,0 +1,24 @@
+<mvc:View xmlns:table="sap.fe.macros.table" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:macros="sap.fe.macros"
+    xmlns:macrosTable="sap.fe.macros.table"
+    xmlns:html="http://www.w3.org/1999/xhtml" controllerName="createprepaymentapply.ext.main.Main">
+    <Page id="Main" showHeader="true" title="123">
+        <content>
+            <macros:Table metaPath="@com.sap.vocabularies.UI.v1.LineItem"
+                id="LineItemTablePageEdit"
+                busy="{ui>/isBusy}"
+                enablePaste="false"
+                readOnly="false">
+                <macros:columns>
+                    <!-- <macrosTable:Column></macrosTable:Column> -->
+                    <macrosTable:Column header="{i18n>colAttachment}" key="FirstColumnKey"
+                        importance="Low" id="colAttachment" placement="Before"
+                        anchor="DataField::Amount" width="10rem">
+                        <Button id="btnAttachment" text="{i18n>btnAttachment}" type="Transparent"></Button>
+                    </macrosTable:Column>
+                </macros:columns>
+            </macros:Table>
+        </content>
+    </Page>
+</mvc:View>

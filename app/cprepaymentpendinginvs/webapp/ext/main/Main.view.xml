@@ -1,0 +1,36 @@
+<mvc:View xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m"
+    xmlns:macros="sap.fe.macros" xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:macrosTable="sap.fe.macros.table"
+    controllerName="cprepaymentpendinginvs.ext.main.Main">
+    <Page id="Main" title="{i18n&gt;MainTitle}" class="sapUiSmallMargin">
+        <content>
+            <macros:Table id="NewTable" metaPath="@com.sap.vocabularies.UI.v1.LineItem"
+                headerVisible="false" isSearchable="true" selectionMode="Multi"
+                type="GridTable"
+                readOnly="false"
+                variantManagement="None"
+                beforeRebindTable="onBeforeRebindTable"
+                rowCountMode="Auto"
+                frozenColumnCount="2">
+                <macros:actions>
+                    <macrosTable:Action
+                        key="customSave"
+                        text="{i18n>btnSave}"
+                        press=".onPressSave"
+                        placement="After"
+                        anchor="DataFieldForAction::PrePayment.send_to_approval"
+                        requiresSelection="false"
+                    />
+                </macros:actions>
+                <macros:columns>
+                    <macrosTable:Column header="{i18n>colAttachment}" key="FirstColumnKey"
+                        importance="Low" id="colAttachment" placement="Before"
+                        anchor="DataField::Amount" width="10rem">
+                        <Button id="btnAttachment" text="{i18n>btnAttachment}" type="Transparent"
+                            press="onPressNavToAttachments"></Button>
+                    </macrosTable:Column>
+                </macros:columns>
+            </macros:Table>
+        </content>
+    </Page>
+</mvc:View>

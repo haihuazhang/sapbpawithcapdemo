@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+    <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/Common.xml">
+        <edmx:Include Alias="Common" Namespace="com.sap.vocabularies.Common.v1"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Core.V1.xml">
+        <edmx:Include Alias="Core" Namespace="Org.OData.Core.V1"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/HTML5.xml">
+        <edmx:Include Alias="HTML5" Namespace="com.sap.vocabularies.HTML5.v1"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Measures.V1.xml">
+        <edmx:Include Alias="Measures" Namespace="Org.OData.Measures.V1"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/UI.xml">
+        <edmx:Include Alias="UI" Namespace="com.sap.vocabularies.UI.v1"/>
+    </edmx:Reference>
+    <edmx:DataServices>
+        <Schema Namespace="SlipService" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+            <EntityContainer Name="EntityContainer">
+                <EntitySet Name="PrePayInvoice" EntityType="SlipService.PrePayInvoice">
+                    <NavigationPropertyBinding Path="CustomerCode" Target="Customers"/>
+                    <NavigationPropertyBinding Path="currency" Target="Currencies"/>
+                    <NavigationPropertyBinding Path="Attachments" Target="AttachmentComposition"/>
+                    <NavigationPropertyBinding Path="SiblingEntity" Target="PrePayInvoice"/>
+                </EntitySet>
+                <Singleton Name="Upload" Type="SlipService.Upload"/>
+                <EntitySet Name="Customers" EntityType="SlipService.Customers"/>
+                <EntitySet Name="Currencies" EntityType="SlipService.Currencies">
+                    <NavigationPropertyBinding Path="texts" Target="Currencies_texts"/>
+                    <NavigationPropertyBinding Path="localized" Target="Currencies_texts"/>
+                </EntitySet>
+                <EntitySet Name="AttachmentComposition" EntityType="SlipService.AttachmentComposition">
+                    <NavigationPropertyBinding Path="PrePayInvoice" Target="PrePayInvoice"/>
+                    <NavigationPropertyBinding Path="SiblingEntity" Target="AttachmentComposition"/>
+                </EntitySet>
+                <EntitySet Name="Currencies_texts" EntityType="SlipService.Currencies_texts"/>
+            </EntityContainer>
+            <EntityType Name="PrePayInvoice">
+                <Key>
+                    <PropertyRef Name="ID"/>
+                    <PropertyRef Name="IsActiveEntity"/>
+                </Key>
+                <Property Name="ID" Type="Edm.Guid" Nullable="false"/>
+                <Property Name="createdAt" Type="Edm.DateTimeOffset" Precision="7"/>
+                <Property Name="createdBy" Type="Edm.String" MaxLength="255"/>
+                <Property Name="modifiedAt" Type="Edm.DateTimeOffset" Precision="7"/>
+                <Property Name="modifiedBy" Type="Edm.String" MaxLength="255"/>
+                <NavigationProperty Name="CustomerCode" Type="SlipService.Customers">
+                    <ReferentialConstraint Property="CustomerCode_CustomerCode" ReferencedProperty="CustomerCode"/>
+                </NavigationProperty>
+                <Property Name="CustomerCode_CustomerCode" Type="Edm.String" MaxLength="10"/>
+                <Property Name="Prepayment" Type="Edm.String" MaxLength="10"/>
+                <Property Name="MaterialType" Type="Edm.String" MaxLength="4"/>
+                <Property Name="Amount" Type="Edm.Decimal" Scale="2" Precision="13"/>
+                <NavigationProperty Name="currency" Type="SlipService.Currencies">
+                    <ReferentialConstraint Property="currency_code" ReferencedProperty="code"/>
+                </NavigationProperty>
+                <Property Name="currency_code" Type="Edm.String" MaxLength="3"/>
+                <Property Name="TaxRate" Type="Edm.Decimal" Scale="2" Precision="2"/>
+                <Property Name="ApplyReason" Type="Edm.String" MaxLength="100"/>
+                <Property Name="PaymentBaseDate" Type="Edm.Date"/>
+                <Property Name="InvoiceNumber" Type="Edm.String" MaxLength="10"/>
+                <Property Name="TaxClassfication" Type="Edm.String" MaxLength="16"/>
+                <NavigationProperty Name="Attachments" Type="Collection(SlipService.AttachmentComposition)" Partner="PrePayInvoice">
+                    <OnDelete Action="Cascade"/>
+                </NavigationProperty>
+                <Property Name="IsActiveEntity" Type="Edm.Boolean" Nullable="false" DefaultValue="true"/>
+                <Property Name="HasActiveEntity" Type="Edm.Boolean" Nullable="false" DefaultValue="false"/>
+                <Property Name="HasDraftEntity" Type="Edm.Boolean" Nullable="false" DefaultValue="false"/>
+                <NavigationProperty Name="DraftAdministrativeData" Type="SlipService.DraftAdministrativeData" ContainsTarget="true"/>
+                <NavigationProperty Name="SiblingEntity" Type="SlipService.PrePayInvoice"/>
+            </EntityType>
+            <EntityType Name="Upload">
+                <Property Name="csv" Type="Edm.Stream"/>
+            </EntityType>
+            <EntityType Name="Customers">
+                <Key>
+                    <PropertyRef Name="CustomerCode"/>
+                </Key>
+                <Property Name="CustomerCode" Type="Edm.String" MaxLength="10" Nullable="false"/>
+                <Property Name="CustomerName" Type="Edm.String" MaxLength="40"/>
+            </EntityType>
+            <EntityType Name="Currencies">
+                <Key>
+                    <PropertyRef Name="code"/>
+                </Key>
+                <Property Name="name" Type="Edm.String" MaxLength="255"/>
+                <Property Name="descr" Type="Edm.String" MaxLength="1000"/>
+                <Property Name="code" Type="Edm.String" MaxLength="3" Nullable="false"/>
+                <Property Name="symbol" Type="Edm.String" MaxLength="5"/>
+                <Property Name="minorUnit" Type="Edm.Int16"/>
+                <NavigationProperty Name="texts" Type="Collection(SlipService.Currencies_texts)">
+                    <OnDelete Action="Cascade"/>
+                </NavigationProperty>
+                <NavigationProperty Name="localized" Type="SlipService.Currencies_texts">
+                    <ReferentialConstraint Property="code" ReferencedProperty="code"/>
+                </NavigationProperty>
+            </EntityType>
+            <EntityType Name="AttachmentComposition">
+                <Key>
+                    <PropertyRef Name="ID"/>
+                    <PropertyRef Name="IsActiveEntity"/>
+                </Key>
+                <Property Name="ID" Type="Edm.Guid" Nullable="false"/>
+                <Property Name="createdAt" Type="Edm.DateTimeOffset" Precision="7"/>
+                <Property Name="createdBy" Type="Edm.String" MaxLength="255"/>
+                <Property Name="modifiedAt" Type="Edm.DateTimeOffset" Precision="7"/>
+                <Property Name="modifiedBy" Type="Edm.String" MaxLength="255"/>
+                <Property Name="MimeType" Type="Edm.String"/>
+                <Property Name="FileName" Type="Edm.String" MaxLength="100"/>
+                <Property Name="Content" Type="Edm.Stream"/>
+                <NavigationProperty Name="PrePayInvoice" Type="SlipService.PrePayInvoice" Partner="Attachments">
+                    <ReferentialConstraint Property="PrePayInvoice_ID" ReferencedProperty="ID"/>
+                </NavigationProperty>
+                <Property Name="PrePayInvoice_ID" Type="Edm.Guid"/>
+                <Property Name="IsActiveEntity" Type="Edm.Boolean" Nullable="false" DefaultValue="true"/>
+                <Property Name="HasActiveEntity" Type="Edm.Boolean" Nullable="false" DefaultValue="false"/>
+                <Property Name="HasDraftEntity" Type="Edm.Boolean" Nullable="false" DefaultValue="false"/>
+                <NavigationProperty Name="DraftAdministrativeData" Type="SlipService.DraftAdministrativeData" ContainsTarget="true"/>
+                <NavigationProperty Name="SiblingEntity" Type="SlipService.AttachmentComposition"/>
+            </EntityType>
+            <EntityType Name="DraftAdministrativeData">
+                <Key>
+                    <PropertyRef Name="DraftUUID"/>
+                </Key>
+                <Property Name="DraftUUID" Type="Edm.Guid" Nullable="false"/>
+                <Property Name="CreationDateTime" Type="Edm.DateTimeOffset" Precision="7"/>
+                <Property Name="CreatedByUser" Type="Edm.String" MaxLength="256"/>
+                <Property Name="DraftIsCreatedByMe" Type="Edm.Boolean"/>
+                <Property Name="LastChangeDateTime" Type="Edm.DateTimeOffset" Precision="7"/>
+                <Property Name="LastChangedByUser" Type="Edm.String" MaxLength="256"/>
+                <Property Name="InProcessByUser" Type="Edm.String" MaxLength="256"/>
+                <Property Name="DraftIsProcessedByMe" Type="Edm.Boolean"/>
+            </EntityType>
+            <EntityType Name="Currencies_texts">
+                <Key>
+                    <PropertyRef Name="locale"/>
+                    <PropertyRef Name="code"/>
+                </Key>
+                <Property Name="locale" Type="Edm.String" MaxLength="14" Nullable="false"/>
+                <Property Name="name" Type="Edm.String" MaxLength="255"/>
+                <Property Name="descr" Type="Edm.String" MaxLength="1000"/>
+                <Property Name="code" Type="Edm.String" MaxLength="3" Nullable="false"/>
+            </EntityType>
+            <Action Name="send_to_approval" IsBound="true">
+                <Parameter Name="in" Type="SlipService.PrePayInvoice"/>
+            </Action>
+            <Action Name="draftPrepare" IsBound="true" EntitySetPath="in">
+                <Parameter Name="in" Type="SlipService.PrePayInvoice"/>
+                <Parameter Name="SideEffectsQualifier" Type="Edm.String"/>
+                <ReturnType Type="SlipService.PrePayInvoice"/>
+            </Action>
+            <Action Name="draftPrepare" IsBound="true" EntitySetPath="in">
+                <Parameter Name="in" Type="SlipService.AttachmentComposition"/>
+                <Parameter Name="SideEffectsQualifier" Type="Edm.String"/>
+                <ReturnType Type="SlipService.AttachmentComposition"/>
+            </Action>
+            <Action Name="draftActivate" IsBound="true" EntitySetPath="in">
+                <Parameter Name="in" Type="SlipService.PrePayInvoice"/>
+                <ReturnType Type="SlipService.PrePayInvoice"/>
+            </Action>
+            <Action Name="draftEdit" IsBound="true" EntitySetPath="in">
+                <Parameter Name="in" Type="SlipService.PrePayInvoice"/>
+                <Parameter Name="PreserveChanges" Type="Edm.Boolean"/>
+                <ReturnType Type="SlipService.PrePayInvoice"/>
+            </Action>
+            <Annotations Target="SlipService.PrePayInvoice">
+                <Annotation Term="UI.HeaderInfo">
+                    <Record Type="UI.HeaderInfoType">
+                        <PropertyValue Property="TypeName" String="{i18n>HeaderTitle}"/>
+                            <PropertyValue Property="TypeNamePlural" String="{i18n>HeaderTitle}"/>
+                            </Record>
+                        </Annotation>
+                        <Annotation Term="UI.SelectionFields">
+                            <Collection>
+                                <PropertyPath>InvoiceNumber</PropertyPath>
+                                <PropertyPath>CustomerCode_CustomerCode</PropertyPath>
+                                <PropertyPath>Prepayment</PropertyPath>
+                                <PropertyPath>MaterialType</PropertyPath>
+                                <PropertyPath>createdBy</PropertyPath>
+                                <PropertyPath>PaymentBaseDate</PropertyPath>
+                                <PropertyPath>Amount</PropertyPath>
+                            </Collection>
+                        </Annotation>
+                        <Annotation Term="UI.LineItem">
+                            <Collection>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="CustomerCode_CustomerCode"/>
+                                    <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High"/>
+                                    <Annotation Term="HTML5.CssDefaults">
+                                        <Record Type="HTML5.CssDefaultsType">
+                                            <PropertyValue Property="width" String="15em"/>
+                                        </Record>
+                                    </Annotation>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="Prepayment"/>
+                                    <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High"/>
+                                    <Annotation Term="HTML5.CssDefaults">
+                                        <Record Type="HTML5.CssDefaultsType">
+                                            <PropertyValue Property="width" String="15em"/>
+                                        </Record>
+                                    </Annotation>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="MaterialType"/>
+                                    <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High"/>
+                                    <Annotation Term="HTML5.CssDefaults">
+                                        <Record Type="HTML5.CssDefaultsType">
+                                            <PropertyValue Property="width" String="15em"/>
+                                        </Record>
+                                    </Annotation>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="Amount"/>
+                                    <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High"/>
+                                    <Annotation Term="HTML5.CssDefaults">
+                                        <Record Type="HTML5.CssDefaultsType">
+                                            <PropertyValue Property="width" String="15em"/>
+                                        </Record>
+                                    </Annotation>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="TaxRate"/>
+                                    <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High"/>
+                                    <Annotation Term="HTML5.CssDefaults">
+                                        <Record Type="HTML5.CssDefaultsType">
+                                            <PropertyValue Property="width" String="15em"/>
+                                        </Record>
+                                    </Annotation>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="TaxClassfication"/>
+                                    <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High"/>
+                                    <Annotation Term="HTML5.CssDefaults">
+                                        <Record Type="HTML5.CssDefaultsType">
+                                            <PropertyValue Property="width" String="15em"/>
+                                        </Record>
+                                    </Annotation>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="ApplyReason"/>
+                                    <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High"/>
+                                    <Annotation Term="HTML5.CssDefaults">
+                                        <Record Type="HTML5.CssDefaultsType">
+                                            <PropertyValue Property="width" String="15em"/>
+                                        </Record>
+                                    </Annotation>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="PaymentBaseDate"/>
+                                    <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High"/>
+                                    <Annotation Term="HTML5.CssDefaults">
+                                        <Record Type="HTML5.CssDefaultsType">
+                                            <PropertyValue Property="width" String="15em"/>
+                                        </Record>
+                                    </Annotation>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="InvoiceNumber"/>
+                                    <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High"/>
+                                    <Annotation Term="HTML5.CssDefaults">
+                                        <Record Type="HTML5.CssDefaultsType">
+                                            <PropertyValue Property="width" String="15em"/>
+                                        </Record>
+                                    </Annotation>
+                                </Record>
+                                <Record Type="UI.DataFieldForAction">
+                                    <PropertyValue Property="Action" String="SlipService.send_to_approval"/>
+                                    <PropertyValue Property="Label" String="{i18n>SendToApproval}"/>
+                                        <PropertyValue Property="Inline" Bool="false"/>
+                                        <PropertyValue Property="InvocationGrouping" EnumMember="UI.OperationGroupingType/Isolated"/>
+                                        <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/Medium"/>
+                                    </Record>
+                                </Collection>
+                            </Annotation>
+                            <Annotation Term="UI.Identification">
+                                <Collection>
+                                    <Record Type="UI.DataFieldForAction">
+                                        <PropertyValue Property="Action" String="SlipService.send_to_approval"/>
+                                        <PropertyValue Property="Label" String="{i18n>SendToApproval}"/>
+                                        </Record>
+                                    </Collection>
+                                </Annotation>
+                                <Annotation Term="UI.Facets">
+                                    <Collection>
+                                        <Record Type="UI.ReferenceFacet">
+                                            <PropertyValue Property="Label" String="{i18n>Details}"/>
+                                                <PropertyValue Property="ID" String="Details"/>
+                                                <PropertyValue Property="Target" AnnotationPath="@UI.FieldGroup#Details"/>
+                                            </Record>
+                                            <Record Type="UI.ReferenceFacet">
+                                                <PropertyValue Property="Label" String="{i18n>Attachments}"/>
+                                                    <PropertyValue Property="ID" String="Attachment"/>
+                                                    <PropertyValue Property="Target" AnnotationPath="Attachments/@UI.LineItem"/>
+                                                </Record>
+                                            </Collection>
+                                        </Annotation>
+                                        <Annotation Term="UI.FieldGroup" Qualifier="Header">
+                                            <Record Type="UI.FieldGroupType">
+                                                <PropertyValue Property="Data">
+                                                    <Collection>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="CustomerCode_CustomerCode"/>
+                                                        </Record>
+                                                    </Collection>
+                                                </PropertyValue>
+                                            </Record>
+                                        </Annotation>
+                                        <Annotation Term="UI.FieldGroup" Qualifier="General">
+                                            <Record Type="UI.FieldGroupType">
+                                                <PropertyValue Property="Data">
+                                                    <Collection>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="Prepayment"/>
+                                                        </Record>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="MaterialType"/>
+                                                        </Record>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="Amount"/>
+                                                        </Record>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="PaymentBaseDate"/>
+                                                        </Record>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="TaxRate"/>
+                                                        </Record>
+                                                    </Collection>
+                                                </PropertyValue>
+                                            </Record>
+                                        </Annotation>
+                                        <Annotation Term="UI.FieldGroup" Qualifier="Details">
+                                            <Record Type="UI.FieldGroupType">
+                                                <PropertyValue Property="Data">
+                                                    <Collection>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="CustomerCode_CustomerCode"/>
+                                                        </Record>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="Prepayment"/>
+                                                        </Record>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="MaterialType"/>
+                                                        </Record>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="Amount"/>
+                                                        </Record>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="TaxRate"/>
+                                                        </Record>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="ApplyReason"/>
+                                                        </Record>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="PaymentBaseDate"/>
+                                                        </Record>
+                                                        <Record Type="UI.DataField">
+                                                            <PropertyValue Property="Value" Path="InvoiceNumber"/>
+                                                        </Record>
+                                                    </Collection>
+                                                </PropertyValue>
+                                            </Record>
+                                        </Annotation>
+                                    </Annotations>
+                                    <Annotations Target="SlipService.EntityContainer/PrePayInvoice">
+                                        <Annotation Term="Common.DraftRoot">
+                                            <Record Type="Common.DraftRootType">
+                                                <PropertyValue Property="ActivationAction" String="SlipService.draftActivate"/>
+                                                <PropertyValue Property="EditAction" String="SlipService.draftEdit"/>
+                                                <PropertyValue Property="PreparationAction" String="SlipService.draftPrepare"/>
+                                            </Record>
+                                        </Annotation>
+                                    </Annotations>
+                                    <Annotations Target="SlipService.PrePayInvoice/ID">
+                                        <Annotation Term="UI.Hidden" Bool="true"/>
+                                        <Annotation Term="UI.HiddenFilter" Bool="true"/>
+                                    </Annotations>
+                                    <Annotations Target="SlipService.PrePayInvoice/createdAt">
+                                        <Annotation Term="UI.HiddenFilter" Bool="true"/>
+                                        <Annotation Term="Core.Immutable" Bool="true"/>
+                                        <Annotation Term="Core.Computed" Bool="true"/>
+                                        <Annotation Term="Common.Label" String="{i18n>CreatedAt}"/>
+                                        </Annotations>
+                                        <Annotations Target="SlipService.PrePayInvoice/createdBy">
+                                            <Annotation Term="UI.HiddenFilter" Bool="true"/>
+                                            <Annotation Term="Core.Immutable" Bool="true"/>
+                                            <Annotation Term="Core.Computed" Bool="true"/>
+                                            <Annotation Term="Core.Description" String="{i18n>UserID.Description}"/>
+                                                <Annotation Term="Common.Label" String="{i18n>CreatedBy}"/>
+                                                </Annotations>
+                                                <Annotations Target="SlipService.PrePayInvoice/modifiedAt">
+                                                    <Annotation Term="UI.HiddenFilter" Bool="true"/>
+                                                    <Annotation Term="Core.Computed" Bool="true"/>
+                                                    <Annotation Term="Common.Label" String="{i18n>ChangedAt}"/>
+                                                    </Annotations>
+                                                    <Annotations Target="SlipService.PrePayInvoice/modifiedBy">
+                                                        <Annotation Term="UI.HiddenFilter" Bool="true"/>
+                                                        <Annotation Term="Core.Computed" Bool="true"/>
+                                                        <Annotation Term="Core.Description" String="{i18n>UserID.Description}"/>
+                                                            <Annotation Term="Common.Label" String="{i18n>ChangedBy}"/>
+                                                            </Annotations>
+                                                            <Annotations Target="SlipService.PrePayInvoice/CustomerCode">
+                                                                <Annotation Term="Common.Label" String="{i18n>Customer}"/>
+                                                                </Annotations>
+                                                                <Annotations Target="SlipService.PrePayInvoice/CustomerCode_CustomerCode">
+                                                                    <Annotation Term="Common.FieldControl" EnumMember="Common.FieldControlType/Mandatory"/>
+                                                                    <Annotation Term="Common.ValueList">
+                                                                        <Record Type="Common.ValueListType">
+                                                                            <PropertyValue Property="CollectionPath" String="Customers"/>
+                                                                            <PropertyValue Property="Parameters">
+                                                                                <Collection>
+                                                                                    <Record Type="Common.ValueListParameterInOut">
+                                                                                        <PropertyValue Property="LocalDataProperty" PropertyPath="CustomerCode_CustomerCode"/>
+                                                                                        <PropertyValue Property="ValueListProperty" String="CustomerCode"/>
+                                                                                    </Record>
+                                                                                    <Record Type="Common.ValueListParameterDisplayOnly">
+                                                                                        <PropertyValue Property="ValueListProperty" String="CustomerName"/>
+                                                                                    </Record>
+                                                                                </Collection>
+                                                                            </PropertyValue>
+                                                                        </Record>
+                                                                    </Annotation>
+                                                                    <Annotation Term="Common.Label" String="{i18n>Customer}"/>
+                                                                    </Annotations>
+                                                                    <Annotations Target="SlipService.PrePayInvoice/Prepayment">
+                                                                        <Annotation Term="Common.Label" String="{i18n>Prepayment}"/>
+                                                                        </Annotations>
+                                                                        <Annotations Target="SlipService.PrePayInvoice/MaterialType">
+                                                                            <Annotation Term="Common.Label" String="{i18n>Materialtype}"/>
+                                                                                <Annotation Term="Common.FieldControl" EnumMember="Common.FieldControlType/Mandatory"/>
+                                                                            </Annotations>
+                                                                            <Annotations Target="SlipService.PrePayInvoice/Amount">
+                                                                                <Annotation Term="Measures.ISOCurrency" Path="currency_code"/>
+                                                                                <Annotation Term="Common.Label" String="{i18n>Amount}"/>
+                                                                                </Annotations>
+                                                                                <Annotations Target="SlipService.PrePayInvoice/currency">
+                                                                                    <Annotation Term="Common.Label" String="{i18n>Currency}"/>
+                                                                                        <Annotation Term="Core.Description" String="{i18n>CurrencyCode.Description}"/>
+                                                                                        </Annotations>
+                                                                                        <Annotations Target="SlipService.PrePayInvoice/currency_code">
+                                                                                            <Annotation Term="Common.Label" String="{i18n>Currency}"/>
+                                                                                                <Annotation Term="Common.ValueList">
+                                                                                                    <Record Type="Common.ValueListType">
+                                                                                                        <PropertyValue Property="Label" String="{i18n>Currency}"/>
+                                                                                                            <PropertyValue Property="CollectionPath" String="Currencies"/>
+                                                                                                            <PropertyValue Property="Parameters">
+                                                                                                                <Collection>
+                                                                                                                    <Record Type="Common.ValueListParameterInOut">
+                                                                                                                        <PropertyValue Property="LocalDataProperty" PropertyPath="currency_code"/>
+                                                                                                                        <PropertyValue Property="ValueListProperty" String="code"/>
+                                                                                                                    </Record>
+                                                                                                                    <Record Type="Common.ValueListParameterDisplayOnly">
+                                                                                                                        <PropertyValue Property="ValueListProperty" String="name"/>
+                                                                                                                    </Record>
+                                                                                                                </Collection>
+                                                                                                            </PropertyValue>
+                                                                                                        </Record>
+                                                                                                    </Annotation>
+                                                                                                    <Annotation Term="Core.Description" String="{i18n>CurrencyCode.Description}"/>
+                                                                                                    </Annotations>
+                                                                                                    <Annotations Target="SlipService.PrePayInvoice/TaxRate">
+                                                                                                        <Annotation Term="Common.Label" String="{i18n>Rate}"/>
+                                                                                                        </Annotations>
+                                                                                                        <Annotations Target="SlipService.PrePayInvoice/ApplyReason">
+                                                                                                            <Annotation Term="UI.MultiLineText" Bool="true"/>
+                                                                                                            <Annotation Term="Common.Label" String="{i18n>ApplyReason}"/>
+                                                                                                            </Annotations>
+                                                                                                            <Annotations Target="SlipService.PrePayInvoice/PaymentBaseDate">
+                                                                                                                <Annotation Term="Common.Label" String="{i18n>PaymentBaseDate}"/>
+                                                                                                                </Annotations>
+                                                                                                                <Annotations Target="SlipService.PrePayInvoice/InvoiceNumber">
+                                                                                                                    <Annotation Term="Common.Label" String="{i18n>InvoiceNumber}"/>
+                                                                                                                    </Annotations>
+                                                                                                                    <Annotations Target="SlipService.PrePayInvoice/TaxClassfication">
+                                                                                                                        <Annotation Term="Common.Label" String="{i18n>TaxClassfication}"/>
+                                                                                                                        </Annotations>
+                                                                                                                        <Annotations Target="SlipService.PrePayInvoice/IsActiveEntity">
+                                                                                                                            <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                                                        </Annotations>
+                                                                                                                        <Annotations Target="SlipService.PrePayInvoice/HasActiveEntity">
+                                                                                                                            <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                                                        </Annotations>
+                                                                                                                        <Annotations Target="SlipService.PrePayInvoice/HasDraftEntity">
+                                                                                                                            <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                                                        </Annotations>
+                                                                                                                        <Annotations Target="SlipService.PrePayInvoice/DraftAdministrativeData">
+                                                                                                                            <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                                                        </Annotations>
+                                                                                                                        <Annotations Target="SlipService.Upload/csv">
+                                                                                                                            <Annotation Term="Core.MediaType" String="text/csv"/>
+                                                                                                                        </Annotations>
+                                                                                                                        <Annotations Target="SlipService.Customers/CustomerCode">
+                                                                                                                            <Annotation Term="Common.Label" String="{i18n>CustomerCode}"/>
+                                                                                                                            </Annotations>
+                                                                                                                            <Annotations Target="SlipService.Customers/CustomerName">
+                                                                                                                                <Annotation Term="Common.Label" String="{i18n>CustomerName}"/>
+                                                                                                                                </Annotations>
+                                                                                                                                <Annotations Target="SlipService.Currencies">
+                                                                                                                                    <Annotation Term="UI.Identification">
+                                                                                                                                        <Collection>
+                                                                                                                                            <Record Type="UI.DataField">
+                                                                                                                                                <PropertyValue Property="Value" Path="name"/>
+                                                                                                                                            </Record>
+                                                                                                                                        </Collection>
+                                                                                                                                    </Annotation>
+                                                                                                                                </Annotations>
+                                                                                                                                <Annotations Target="SlipService.Currencies/name">
+                                                                                                                                    <Annotation Term="Common.Label" String="{i18n>Name}"/>
+                                                                                                                                    </Annotations>
+                                                                                                                                    <Annotations Target="SlipService.Currencies/descr">
+                                                                                                                                        <Annotation Term="Common.Label" String="{i18n>Description}"/>
+                                                                                                                                        </Annotations>
+                                                                                                                                        <Annotations Target="SlipService.Currencies/code">
+                                                                                                                                            <Annotation Term="Common.Text" Path="name"/>
+                                                                                                                                            <Annotation Term="Common.Label" String="{i18n>CurrencyCode}"/>
+                                                                                                                                            </Annotations>
+                                                                                                                                            <Annotations Target="SlipService.Currencies/symbol">
+                                                                                                                                                <Annotation Term="Common.Label" String="{i18n>CurrencySymbol}"/>
+                                                                                                                                                </Annotations>
+                                                                                                                                                <Annotations Target="SlipService.Currencies/minorUnit">
+                                                                                                                                                    <Annotation Term="Common.Label" String="{i18n>CurrencyMinorUnit}"/>
+                                                                                                                                                    </Annotations>
+                                                                                                                                                    <Annotations Target="SlipService.AttachmentComposition">
+                                                                                                                                                        <Annotation Term="UI.LineItem">
+                                                                                                                                                            <Collection>
+                                                                                                                                                                <Record Type="UI.DataField">
+                                                                                                                                                                    <PropertyValue Property="Value" Path="Content"/>
+                                                                                                                                                                </Record>
+                                                                                                                                                                <Record Type="UI.DataField">
+                                                                                                                                                                    <PropertyValue Property="Value" Path="createdAt"/>
+                                                                                                                                                                </Record>
+                                                                                                                                                                <Record Type="UI.DataField">
+                                                                                                                                                                    <PropertyValue Property="Value" Path="createdBy"/>
+                                                                                                                                                                </Record>
+                                                                                                                                                            </Collection>
+                                                                                                                                                        </Annotation>
+                                                                                                                                                    </Annotations>
+                                                                                                                                                    <Annotations Target="SlipService.EntityContainer/AttachmentComposition">
+                                                                                                                                                        <Annotation Term="Common.DraftNode">
+                                                                                                                                                            <Record Type="Common.DraftNodeType">
+                                                                                                                                                                <PropertyValue Property="PreparationAction" String="SlipService.draftPrepare"/>
+                                                                                                                                                            </Record>
+                                                                                                                                                        </Annotation>
+                                                                                                                                                    </Annotations>
+                                                                                                                                                    <Annotations Target="SlipService.AttachmentComposition/createdAt">
+                                                                                                                                                        <Annotation Term="UI.HiddenFilter" Bool="true"/>
+                                                                                                                                                        <Annotation Term="Core.Immutable" Bool="true"/>
+                                                                                                                                                        <Annotation Term="Core.Computed" Bool="true"/>
+                                                                                                                                                        <Annotation Term="Common.Label" String="{i18n>CreatedAt}"/>
+                                                                                                                                                        </Annotations>
+                                                                                                                                                        <Annotations Target="SlipService.AttachmentComposition/createdBy">
+                                                                                                                                                            <Annotation Term="UI.HiddenFilter" Bool="true"/>
+                                                                                                                                                            <Annotation Term="Core.Immutable" Bool="true"/>
+                                                                                                                                                            <Annotation Term="Core.Computed" Bool="true"/>
+                                                                                                                                                            <Annotation Term="Core.Description" String="{i18n>UserID.Description}"/>
+                                                                                                                                                                <Annotation Term="Common.Label" String="{i18n>CreatedBy}"/>
+                                                                                                                                                                </Annotations>
+                                                                                                                                                                <Annotations Target="SlipService.AttachmentComposition/modifiedAt">
+                                                                                                                                                                    <Annotation Term="UI.HiddenFilter" Bool="true"/>
+                                                                                                                                                                    <Annotation Term="Core.Computed" Bool="true"/>
+                                                                                                                                                                    <Annotation Term="Common.Label" String="{i18n>ChangedAt}"/>
+                                                                                                                                                                    </Annotations>
+                                                                                                                                                                    <Annotations Target="SlipService.AttachmentComposition/modifiedBy">
+                                                                                                                                                                        <Annotation Term="UI.HiddenFilter" Bool="true"/>
+                                                                                                                                                                        <Annotation Term="Core.Computed" Bool="true"/>
+                                                                                                                                                                        <Annotation Term="Core.Description" String="{i18n>UserID.Description}"/>
+                                                                                                                                                                            <Annotation Term="Common.Label" String="{i18n>ChangedBy}"/>
+                                                                                                                                                                            </Annotations>
+                                                                                                                                                                            <Annotations Target="SlipService.AttachmentComposition/MimeType">
+                                                                                                                                                                                <Annotation Term="Core.IsMediaType" Bool="true"/>
+                                                                                                                                                                            </Annotations>
+                                                                                                                                                                            <Annotations Target="SlipService.AttachmentComposition/Content">
+                                                                                                                                                                                <Annotation Term="Core.MediaType" Path="MimeType"/>
+                                                                                                                                                                                <Annotation Term="Core.ContentDisposition">
+                                                                                                                                                                                    <Record Type="Core.ContentDispositionType">
+                                                                                                                                                                                        <PropertyValue Property="Filename" Path="FileName"/>
+                                                                                                                                                                                    </Record>
+                                                                                                                                                                                </Annotation>
+                                                                                                                                                                            </Annotations>
+                                                                                                                                                                            <Annotations Target="SlipService.AttachmentComposition/IsActiveEntity">
+                                                                                                                                                                                <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                                                                                                            </Annotations>
+                                                                                                                                                                            <Annotations Target="SlipService.AttachmentComposition/HasActiveEntity">
+                                                                                                                                                                                <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                                                                                                            </Annotations>
+                                                                                                                                                                            <Annotations Target="SlipService.AttachmentComposition/HasDraftEntity">
+                                                                                                                                                                                <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                                                                                                            </Annotations>
+                                                                                                                                                                            <Annotations Target="SlipService.AttachmentComposition/DraftAdministrativeData">
+                                                                                                                                                                                <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                                                                                                            </Annotations>
+                                                                                                                                                                            <Annotations Target="SlipService.DraftAdministrativeData">
+                                                                                                                                                                                <Annotation Term="Common.Label" String="{i18n>Draft_DraftAdministrativeData}"/>
+                                                                                                                                                                                </Annotations>
+                                                                                                                                                                                <Annotations Target="SlipService.DraftAdministrativeData/DraftUUID">
+                                                                                                                                                                                    <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                                                                                                                    <Annotation Term="Common.Label" String="{i18n>Draft_DraftUUID}"/>
+                                                                                                                                                                                    </Annotations>
+                                                                                                                                                                                    <Annotations Target="SlipService.DraftAdministrativeData/CreationDateTime">
+                                                                                                                                                                                        <Annotation Term="Common.Label" String="{i18n>Draft_CreationDateTime}"/>
+                                                                                                                                                                                        </Annotations>
+                                                                                                                                                                                        <Annotations Target="SlipService.DraftAdministrativeData/CreatedByUser">
+                                                                                                                                                                                            <Annotation Term="Common.Label" String="{i18n>Draft_CreatedByUser}"/>
+                                                                                                                                                                                            </Annotations>
+                                                                                                                                                                                            <Annotations Target="SlipService.DraftAdministrativeData/DraftIsCreatedByMe">
+                                                                                                                                                                                                <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                                                                                                                                <Annotation Term="Common.Label" String="{i18n>Draft_DraftIsCreatedByMe}"/>
+                                                                                                                                                                                                </Annotations>
+                                                                                                                                                                                                <Annotations Target="SlipService.DraftAdministrativeData/LastChangeDateTime">
+                                                                                                                                                                                                    <Annotation Term="Common.Label" String="{i18n>Draft_LastChangeDateTime}"/>
+                                                                                                                                                                                                    </Annotations>
+                                                                                                                                                                                                    <Annotations Target="SlipService.DraftAdministrativeData/LastChangedByUser">
+                                                                                                                                                                                                        <Annotation Term="Common.Label" String="{i18n>Draft_LastChangedByUser}"/>
+                                                                                                                                                                                                        </Annotations>
+                                                                                                                                                                                                        <Annotations Target="SlipService.DraftAdministrativeData/InProcessByUser">
+                                                                                                                                                                                                            <Annotation Term="Common.Label" String="{i18n>Draft_InProcessByUser}"/>
+                                                                                                                                                                                                            </Annotations>
+                                                                                                                                                                                                            <Annotations Target="SlipService.DraftAdministrativeData/DraftIsProcessedByMe">
+                                                                                                                                                                                                                <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                                                                                                                                                <Annotation Term="Common.Label" String="{i18n>Draft_DraftIsProcessedByMe}"/>
+                                                                                                                                                                                                                </Annotations>
+                                                                                                                                                                                                                <Annotations Target="SlipService.Currencies_texts/locale">
+                                                                                                                                                                                                                    <Annotation Term="Common.Label" String="{i18n>LanguageCode}"/>
+                                                                                                                                                                                                                    </Annotations>
+                                                                                                                                                                                                                    <Annotations Target="SlipService.Currencies_texts/name">
+                                                                                                                                                                                                                        <Annotation Term="Common.Label" String="{i18n>Name}"/>
+                                                                                                                                                                                                                        </Annotations>
+                                                                                                                                                                                                                        <Annotations Target="SlipService.Currencies_texts/descr">
+                                                                                                                                                                                                                            <Annotation Term="Common.Label" String="{i18n>Description}"/>
+                                                                                                                                                                                                                            </Annotations>
+                                                                                                                                                                                                                            <Annotations Target="SlipService.Currencies_texts/code">
+                                                                                                                                                                                                                                <Annotation Term="Common.Text" Path="name"/>
+                                                                                                                                                                                                                                <Annotation Term="Common.Label" String="{i18n>CurrencyCode}"/>
+                                                                                                                                                                                                                                </Annotations>
+                                                                                                                                                                                                                            </Schema>
+                                                                                                                                                                                                                        </edmx:DataServices>
+                                                                                                                                                                                                                    </edmx:Edmx>

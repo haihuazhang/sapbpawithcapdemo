@@ -1,0 +1,9 @@
+{
+  "requires": {
+    "db": "hana",
+    "auth": "xsuaa"
+  },
+  "i18n": {
+    "default_language": "ja"
+  }
+}

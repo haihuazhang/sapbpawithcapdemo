@@ -1,0 +1,1 @@
+// using SlipService as service from '../../srv/slip-service';
