@@ -7,11 +7,17 @@ SAP CAP & Build Process Automation Demo 项目。包含以下功能:
 
 ## 项目目录
 
-- [app] UI 存放目录
+- `app` UI 存放目录
   - [appconfig](#app-config) 本地 sandbox Launchpad 的配置目录(不会部署到 SAP BTP Trial)
   - [cprepaymentpendinginvs](#cprepaymentpendinginvs) 新规登录 Fiori App(SAP Custom App with Building Block)
   - [prepaymentpendinginvsapproval](#prepaymentpendinginvsapproval) 发票审批 UI(SAP Build Process Automation 审批 UI)
   - fiori.html 本地 sandbox launchpad html 文件
+- `srv` SAP CAP Java程序
+- `db` SAP HANA Cloud Artifacte
+- `i18n` 翻译
+- `bpa` SAP Build Process Automation项目
+  - `action_project` action project存放目录
+  - `project` workflow project存放目录
 
 ### app config
 
