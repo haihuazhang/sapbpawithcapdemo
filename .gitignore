@@ -16,7 +16,7 @@ default-env.json
 **/node_modules/
 
 **/.mta/
-*.mtar
+/mta_archives/*.mtar
 
 *.log*
 gc_history*
