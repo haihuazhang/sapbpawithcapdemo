@@ -165,6 +165,8 @@ SAP CAP & Build Process Automation Demo 项目。包含以下功能:
 3. 登录至SAP BTP环境检查部署结果
     - SAP HANA Cloud中数据库表的部署结果
         - 使用SAP HANA Cloud Central -> SAP
+        - ![alt text](img/sap_hana_cloud_central.png)
+        - 请参考<https://help.sap.com/docs/hana-cloud/sap-hana-database-explorer/getting-started-with-sap-hana-database-explorer?locale=en-US>
     - SAP CAP Java
         - 导航至SAP BTP Subaccount -> Org -> Space
         ![alt text](img/space.png)
