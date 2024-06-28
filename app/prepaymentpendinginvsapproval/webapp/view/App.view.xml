@@ -1,0 +1,92 @@
+<mvc:View xmlns:upload="sap.m.upload" xmlns:form="sap.ui.layout.form"
+    controllerName="prepaymentpendinginvsapproval.controller.App"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:macros="sap.fe.macros"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns="sap.m">
+    <App id="app">
+        <Page showHeader="false" class="sapUiSmallMarginBottom sapUiResponsiveContentPadding">
+            <IconTabBar class="sapUiSmallMarginBottom sapUiResponsiveContentPadding">
+                <items>
+                    <IconTabFilter text="{i18n>header}" icon="sap-icon://header">
+                        <form:SimpleForm layout="ColumnLayout">
+                            <Label text="{i18n>InvoiceNumber}"></Label>
+                            <Text text="{InvoiceNumber}"></Text>
+
+                            <Label
+                                text="{i18n>NormalCancelType}"></Label>
+                            <Text text="{NormalCancelType} {to_NormalCancelType/CodeDescription}"></Text>
+
+                            <Label
+                                text="{i18n>RelatedInvoiceNumber}"></Label>
+                            <Text text="{RelatedInvoiceNumber}"></Text>
+
+                            <Label text="{i18n>CustomerCode}"></Label>
+                            <Text text="{CustomerCode}"></Text>
+
+                            <Label
+                                text="{i18n>CustomerName}"></Label>
+                            <Text text="{to_Customer/CustomerName}"></Text>
+
+                            <Label
+                                text="{i18n>TemporaryOrHoldType}"></Label>
+                            <Text
+                                text="{TemporaryOrHoldType}  {to_TemporaryOrHoldType/CodeDescription}"></Text>
+
+                            <Label text="{i18n>GoodSpecies}"></Label>
+                            <Text text="{GoodSpecies} {to_GoodSpecies/CodeDescription}"></Text>
+
+                            <Label text="{i18n>Amount}"></Label>
+                            <Text text="{Amount} {Currency_code}"></Text>
+
+                            <Label text="{i18n>TaxType}"></Label>
+                            <Text text="{TaxType} {to_TaxType/CodeDescription}"></Text>
+
+                            <Label text="{i18n>TaxRate}"></Label>
+                            <Text text="{TaxRate}"></Text>
+
+                            <Label
+                                text="{i18n>ReasonForApplication}"></Label>
+                            <Text text="{ReasonForApplication}"></Text>
+
+                            <Label
+                                text="{i18n>ReasonFoRejection}"></Label>
+                            <Text text="{ReasonFoRejection}"></Text>
+
+                            <Label
+                                text="{i18n>PaymentBaseDate}"></Label>
+                            <Text text="{PaymentBaseDate}"></Text>
+
+                            <Label
+                                text="{i18n>StateOfApplication}"></Label>
+                            <Text text="{StateOfApplication} {to_ApprovalStatus/CodeDescription}"></Text>
+                        </form:SimpleForm>
+                    </IconTabFilter>
+                    <IconTabFilter text="{i18n>Attachment}" icon="sap-icon://attachment">
+                        <content>
+                            <upload:UploadSet id="UploadCollectionAttach" multiple="true"
+                                items="{to_Attachments}" uploadEnabled="false"
+                                instantUpload="false">
+                                <upload:items>
+                                    <upload:UploadSetItem id="UploadCollectionAttachItem"
+                                        fileName="{FileName}"
+                                        mediaType="{MediaType}"
+                                        url="{formatter:'.formatter.getFileUrl'}"
+                                        enabledEdit="false"
+                                        enabledRemove="false" visibleRemove="false"
+                                        visibleEdit="false">
+                                        <!--url="{path:'WFLOG>__metadata/media_src',formatter:'.getMediaUrl'}" -->
+                                    </upload:UploadSetItem>
+                                </upload:items>
+                            </upload:UploadSet>
+                        </content>
+                    </IconTabFilter>
+                </items>
+            </IconTabBar>
+        </Page>
+    </App>
+    <!-- <macros:Form metaPath="@com.sap.vocabularies.UI.v1.FieldGroup#Details"
+        id="myResponsiveForm">
+    </macros:Form> -->
+
+</mvc:View>

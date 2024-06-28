@@ -47,6 +47,17 @@ entity T_PrepaymentPendingInvoice : managed, cuid {
                                                                      on to_Attachments.Invoice = $self;
     to_Customer                                                : Association to one T_Customer
                                                                      on $self.CustomerCode = to_Customer.CustomerCode;
+
+    to_TemporaryOrHoldType                                     : Association to one M_CommonUtility
+                                                                     on $self.TemporaryOrHoldType = to_TemporaryOrHoldType.Code;
+    to_GoodSpecies                                             : Association to one M_CommonUtility
+                                                                     on $self.GoodSpecies = to_GoodSpecies.Code;
+    to_TaxType                                                 : Association to one M_CommonUtility
+                                                                     on $self.TaxType = to_TaxType.Code;
+    to_ApprovalStatus                                          : Association to one M_CommonUtility
+                                                                     on $self.StateOfApplication = to_ApprovalStatus.Code;
+    to_NormalCancelType                                        : Association to one M_CommonUtility
+                                                                     on $self.StateOfApplication = to_NormalCancelType.Code;
 }
 
 entity T_Attachemt : cuid, managed {

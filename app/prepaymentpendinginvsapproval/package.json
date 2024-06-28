@@ -1,5 +1,5 @@
 {
-    "name": "cprepaymentpendinginvs",
+    "name": "prepaymentpendinginvsapproval",
     "version": "0.0.1",
     "description": "仮払い・保留金額インプット票の新規登録",
     "keywords": [

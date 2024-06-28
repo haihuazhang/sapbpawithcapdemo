@@ -2,8 +2,19 @@ using {zzdemo} from '../db/domain';
 
 @path: 'PrePayment'
 service PrePayment {
-    //  @Common.DraftRoot.NewAction: 'PrePayment.createDraftWithInitUUID'
-    entity PrepaymentPendingInvoices as projection on zzdemo.T_PrepaymentPendingInvoice
+    // @Common.DraftRoot.NewAction: 'PrePayment.createDraftWithInitUUID'
+    @UI.CreateHidden: true
+    entity PrepaymentPendingInvoices as
+        projection on zzdemo.T_PrepaymentPendingInvoice {
+            // to_TemporaryOrHoldType : Association to one TemporaryOrHoldType
+            *,
+            to_TemporaryOrHoldType : redirected to TemporaryOrHoldType,
+            to_GoodSpecies         : redirected to GoodSpecies,
+            to_TaxType             : redirected to TaxType,
+            to_ApprovalStatus      : redirected to ApprovalStatus,
+            to_NormalCancelType    : redirected to NormalCancelType
+
+        }
         actions {
             //   action addReview(rating : temp.rating_enum, title : temp.title, descr : temp.description) returns Reviews;
             //   action line_addattachment();
@@ -13,6 +24,9 @@ service PrePayment {
                                     Approver4 : zzdemo.Approver4,
                                     Approver5 : zzdemo.Approver5);
             action createDraftWithInitUUID(in : $self, InitCreationUUID : UUID) returns PrepaymentPendingInvoices;
+            action setApprovedStatus(Approver : zzdemo.Approver1);
+            action setCompleteStatus();
+            action setRejectedStatus(Approver : zzdemo.Approver1);
 
         };
 
@@ -54,7 +68,30 @@ service PrePayment {
         }
         where
             ClassCode = '3';
+
+    entity ApprovalStatus            as
+        select from zzdemo.M_CommonUtility {
+            key Code,
+                CodeValue,
+                CodeDescription
+        }
+        where
+            ClassCode = '6';
+
+    entity NormalCancelType          as
+        select from zzdemo.M_CommonUtility {
+            key Code,
+                CodeValue,
+                CodeDescription
+        }
+        where
+            ClassCode = '2';
 }
+
+// extend PrePayment.PrepaymentPendingInvoices with {
+//     to_TemporaryOrHoldType : Association to one PrePayment.TemporaryOrHoldType
+// };
+
 
 // draft
 annotate PrePayment.PrepaymentPendingInvoices with @odata.draft.enabled;
@@ -96,7 +133,7 @@ annotate PrePayment.PrepaymentPendingInvoices with {
                 },
             ]
         },
-        Text     : to_Customer.CustomerName,
+        Text     : to_Customer.CustomerName
     // TextArrangement : #TextSeparate,
 
     };
@@ -120,7 +157,8 @@ annotate PrePayment.PrepaymentPendingInvoices with {
                     ValueListProperty: 'CodeDescription'
                 },
             ]
-        }
+        },
+        Text                    : to_TemporaryOrHoldType.CodeDescription
     };
     GoodSpecies         @Common: {
         ValueListWithFixedValues: true,
@@ -142,7 +180,8 @@ annotate PrePayment.PrepaymentPendingInvoices with {
                     ValueListProperty: 'CodeDescription'
                 },
             ]
-        }
+        },
+        Text                    : to_GoodSpecies.CodeDescription
     };
     TaxType             @Common: {
         ValueListWithFixedValues: true,
@@ -164,8 +203,12 @@ annotate PrePayment.PrepaymentPendingInvoices with {
                     ValueListProperty: 'CodeDescription'
                 },
             ]
-        }
+        },
+        Text                    : to_TaxType.CodeDescription
     };
+    StateOfApplication  @Common: {Text: to_ApprovalStatus.CodeDescription};
+    NormalCancelType    @Common: {Text: to_NormalCancelType.CodeDescription}
+
 
 };
 

@@ -1,21 +1,25 @@
-_schema-version: '3.1'
+_schema-version: "3.1"
 ID: demo
 version: 1.0.0-SNAPSHOT
 description: "A simple CAP project."
 parameters:
   enable-parallel-deployments: true
+  deploy_mode: html5-repo
 modules:
   - name: demo-srv
     type: java
     path: srv
     parameters:
-      buildpack: sap_java_buildpack_jakarta
+      # buildpack: sap_java_buildpack_jakarta
+      buildpack: https://github.com/cloudfoundry/java-buildpack.git
       readiness-health-check-type: http
       readiness-health-check-http-endpoint: /
     properties:
-      SPRING_PROFILES_ACTIVE: cloud,sandbox
-      JBP_CONFIG_COMPONENTS: "jres: ['com.sap.xs.java.buildpack.jre.SAPMachineJRE']"
-      JBP_CONFIG_SAP_MACHINE_JRE: '{ version: 17.+ }'
+      SPRING_PROFILES_ACTIVE: cloud
+      # JBP_CONFIG_COMPONENTS: "jres: ['com.sap.xs.java.buildpack.jre.SAPMachineJRE']"
+      # JBP_CONFIG_SAP_MACHINE_JRE: "{ version: 21.+ }"
+      JBP_DEFAULT_OPEN_JDK_JRE: "{jre: {version: 21.+ }}"
+      JBP_CONFIG_JAVA_OPTS: "[from_environment: false, java_opts: '-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8000,suspend=n']"
     build-parameters:
       builder: custom
       commands:
@@ -28,6 +32,7 @@ modules:
     requires:
       - name: demo-db
       - name: demo-auth
+      - name: workflow
 
   - name: demo-db-deployer
     type: hdb
@@ -41,7 +46,7 @@ modules:
     requires:
       - name: demo-db
 
-  - name: cpapp-destinations
+  - name: demoworkflow-destinations
     type: com.sap.application.content
     requires:
       - name: demo-auth
@@ -52,19 +57,19 @@ modules:
         parameters:
           service-key:
             name: demoworkflow-html5-repo-host-key
-      - name: demo-srv
+      - name: srv-api
       - name: demoworkflow-destination
         parameters:
           content-target: true
     parameters:
       content:
-        instance:
+        subaccount:
           destinations:
             - Authentication: OAuth2UserTokenExchange
               Name: demo-srv
               TokenServiceInstanceName: demo-auth
               TokenServiceKeyName: demo-auth-key
-              URL: '~{srv-api/srv-url}'
+              URL: "~{srv-api/srv-url}"
               sap.cloud.service: customer.demo
             - Name: demoworkflow-html5-repo-host
               ServiceInstanceName: demoworkflow-html5-repo-host
@@ -78,6 +83,45 @@ modules:
           existing_destinations_policy: update
     build-parameters:
       no-source: true
+  - name: MyProject-app-content
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: demoworkflow-html5-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - artifacts:
+            - cprepaymentpendinginvs.zip
+          name: cprepaymentpendinginvs
+          target-path: resources/
+        - artifacts:
+            - prepaymentpendinginvsapproval.zip
+          name: prepaymentpendinginvsapproval
+          target-path: resources/
+
+  - name: cprepaymentpendinginvs
+    type: html5
+    path: app/cprepaymentpendinginvs
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms: []
+  - name: prepaymentpendinginvsapproval
+    type: html5
+    path: app/prepaymentpendinginvsapproval
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms: []
 
 resources:
   - name: demo-db
@@ -94,11 +138,11 @@ resources:
       config:
         xsappname: demo-${org}-${space}
         tenant-mode: dedicated
-  - name: workflow 
-      type: org.cloudfoundry.managed-service 
-      parameters:
-          service: process-automation-service
-          service-plan: standard
+  - name: workflow
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: process-automation-service
+      service-plan: standard
   - name: demoworkflow-destination
     type: org.cloudfoundry.managed-service
     parameters:

@@ -10,6 +10,7 @@ import java.util.Random;
 // import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 // import org.springframework.jdbc.support.rowset.ResultSetWrappingSqlRowSet;
@@ -41,29 +42,36 @@ import com.sap.cloud.sdk.services.openapi.core.OpenApiRequestException;
 
 import cds.gen.prepayment.CreateDraftWithInitUUIDContext;
 import cds.gen.prepayment.InitialLinesCreationContext;
+import cds.gen.prepayment.PrePayment;
 import cds.gen.prepayment.PrePayment_;
 import cds.gen.prepayment.PrepaymentPendingInvoices;
 import cds.gen.prepayment.PrepaymentPendingInvoices_;
 import cds.gen.prepayment.SendToApprovalContext;
+import cds.gen.prepayment.SetApprovedStatusContext;
+import cds.gen.prepayment.SetCompleteStatusContext;
+import cds.gen.prepayment.SetRejectedStatusContext;
 import customer.demo.spa.api.WorkflowInstancesApi;
 import customer.demo.spa.model.WorkflowInstance;
 import customer.demo.spa.model.WorkflowInstanceStartPayload;
 import customer.demo.util.customOAuth2PropertySupplier.BPAServicePropertySupplier;
+import cds.gen.prepayment.PrePayment.Draft;
 
 @Component
 @ServiceName(PrePayment_.CDS_NAME)
 public class PrePaymentServiceHandler implements EventHandler {
 
-    @Autowired
-    @Qualifier(PrePayment_.CDS_NAME)
-    DraftService prepaymentDraftService;
+    // @Autowired
+    // @Qualifier(PrePayment_.CDS_NAME)
+    // cds.gen.prepayment.PrePayment.Draft prepaymentDraftService;
 
     @Autowired
     @Qualifier(PrePayment_.CDS_NAME)
-    CqnService prepaymentService;
+    PrePayment prepaymentService;
 
     @On(event = InitialLinesCreationContext.CDS_NAME)
     public void initialLinesCreation(InitialLinesCreationContext context) {
+        cds.gen.prepayment.PrePayment.Draft prepaymentDraftService = (cds.gen.prepayment.PrePayment.Draft) prepaymentService;
+
         // get lines
         int lines = context.getLines();
 
@@ -78,6 +86,7 @@ public class PrePaymentServiceHandler implements EventHandler {
         // build insert SQL
         CqnInsert insert = Insert.into(PrepaymentPendingInvoices_.class).entries(invoices);
         // call draft service
+        // drafRemote =
         Result result = prepaymentDraftService.newDraft(insert);
 
         // set result
@@ -96,10 +105,12 @@ public class PrePaymentServiceHandler implements EventHandler {
 
     @On(event = CreateDraftWithInitUUIDContext.CDS_NAME)
     public void createDraftWithInitUUID(CreateDraftWithInitUUIDContext context) {
+        cds.gen.prepayment.PrePayment.Draft prepaymentDraftService = (cds.gen.prepayment.PrePayment.Draft) prepaymentService;
         // context.get
-        PrepaymentPendingInvoices invioce = PrepaymentPendingInvoices.create();
-        invioce.setInitCreationUUID(context.getInitCreationUUID());
-        context.setResult(prepaymentDraftService.newDraft(Insert.into(PrepaymentPendingInvoices_.class).entry(invioce))
+        PrepaymentPendingInvoices invoice = PrepaymentPendingInvoices.create();
+        invoice.setInitCreationUUID(context.getInitCreationUUID());
+        invoice.setCurrencyCode("JPY");
+        context.setResult(prepaymentDraftService.newDraft(Insert.into(PrepaymentPendingInvoices_.class).entry(invoice))
                 .single(PrepaymentPendingInvoices.class));
     }
 
@@ -179,16 +190,18 @@ public class PrePaymentServiceHandler implements EventHandler {
             ServiceBindingDestinationOptions options;
             ServiceBinding serviceBinding;
             int i = 0;
+            int j = 0;
             for (i = 0; i < serviceBindingList.size(); i++) {
                 serviceBinding = serviceBindingList.get(i);
                 String serviceName = serviceBinding.getName().orElse("");
-                if (serviceName == "process-automation-service") {
+                if (serviceName.equals("process-automation-service")) {
+                    j = i;
                     break;
                 }
             }
-            i--;
+            // i--;
 
-            serviceBinding = serviceBindingList.get(i);
+            serviceBinding = serviceBindingList.get(j);
             options = ServiceBindingDestinationOptions.forService(serviceBinding)
                     .withOption(BtpServiceOptions.WorkflowOptions.REST_API)
                     .build();
@@ -200,16 +213,21 @@ public class PrePaymentServiceHandler implements EventHandler {
 
             // 3. call workflow
             WorkflowInstanceStartPayload payload = new WorkflowInstanceStartPayload();
-            payload.definitionId("us10.1b7dddaatrial.process1.process1");
+            // payload.definitionId("us10.1b7dddaatrial.process1.process1");
+            payload.definitionId("us10.1b7dddaatrial.prepaymentpendinginvoicewf2.prepaymentpendinginvoicewf");
             Map<String, Object> workflowInstanceContext = new HashMap<>();
             workflowInstanceContext.put("invoiceUUID", invoice.map(PrepaymentPendingInvoices::getId).get());
             workflowInstanceContext.put("invoiceNumber",
                     invoice.map(PrepaymentPendingInvoices::getInvoiceNumber).get());
-            workflowInstanceContext.put("approval1", context.getApprover1());
-            workflowInstanceContext.put("approval2", context.getApprover2());
-            workflowInstanceContext.put("approval3", context.getApprover3());
-            workflowInstanceContext.put("approval4", context.getApprover4());
-            workflowInstanceContext.put("approval5", context.getApprover5());
+            workflowInstanceContext.put("isActiveEntity", true);
+            workflowInstanceContext.put("approver1", context.getApprover1());
+            workflowInstanceContext.put("approver2", context.getApprover2());
+            workflowInstanceContext.put("approver3", context.getApprover3());
+            workflowInstanceContext.put("approver4", context.getApprover4());
+            workflowInstanceContext.put("approver5", context.getApprover5());
+
+            // JSONObject jsonContext = new JSONObject(workflowInstanceContext);
+
             payload.context(workflowInstanceContext);
 
             WorkflowInstancesApi workflowInstancesApi = new WorkflowInstancesApi(workflowDestination);
@@ -246,6 +264,114 @@ public class PrePaymentServiceHandler implements EventHandler {
                 throw new ServiceException(e);
             }
         }
+    }
+
+    @On(event = SetApprovedStatusContext.CDS_NAME)
+    public void setApprovedStatus(SetApprovedStatusContext context) {
+        // get invoice
+        CqnAnalyzer analyzer = CqnAnalyzer.create(context.getModel());
+        Map<String, Object> keys = analyzer.analyze(context.getCqn()).targetKeys();
+
+        Optional<PrepaymentPendingInvoices> invoice = prepaymentService
+                .run(Select.from(PrepaymentPendingInvoices_.class).matching(keys))
+                .first(PrepaymentPendingInvoices.class);
+        // error if not found
+        invoice.orElseThrow(() -> new ServiceException("404009", keys.toString()));
+
+        // error if entity data is still in draft
+        if (invoice.map(PrepaymentPendingInvoices::getIsActiveEntity).get() == false) {
+            throw new ServiceException("400005");
+        }
+
+        // update invoice approval
+        Map<String, Object> approvals = new HashMap<>();
+        approvals.put("StateOfApplication", "1");
+        approvals.put("AuthorizedUserID", context.getApprover());
+        approvals.put("AuthorizedDateTime", Instant.now());
+
+        // Update Approver without draft
+        CqnUpdate update = Update.entity(PrepaymentPendingInvoices_.class).data(approvals).matching(keys);
+        Result result = prepaymentService.run(update);
+        if (result.rowCount() != 1) {
+            // No.21 error
+            throw new ServiceException("common.invoice.approverupdateerror",
+                    invoice.map(PrepaymentPendingInvoices::getInvoiceNumber).get());
+        } else {
+            context.setCompleted();
+        }
+
+    }
+
+    @On(event = SetCompleteStatusContext.CDS_NAME)
+    public void setCompletedStatus(SetCompleteStatusContext context) {
+        // get invoice
+        CqnAnalyzer analyzer = CqnAnalyzer.create(context.getModel());
+        Map<String, Object> keys = analyzer.analyze(context.getCqn()).targetKeys();
+
+        Optional<PrepaymentPendingInvoices> invoice = prepaymentService
+                .run(Select.from(PrepaymentPendingInvoices_.class).matching(keys))
+                .first(PrepaymentPendingInvoices.class);
+        // error if not found
+        invoice.orElseThrow(() -> new ServiceException("404009", keys.toString()));
+
+        // error if entity data is still in draft
+        if (invoice.map(PrepaymentPendingInvoices::getIsActiveEntity).get() == false) {
+            throw new ServiceException("400005");
+        }
+
+        // update invoice approval
+        Map<String, Object> approvals = new HashMap<>();
+        approvals.put("StateOfApplication", "2");
+        // approvals.put("AuthorizedUserID", context.getApprover());
+        // approvals.put("AuthorizedDateTime", Instant.now());
+
+        // Update Approver without draft
+        CqnUpdate update = Update.entity(PrepaymentPendingInvoices_.class).data(approvals).matching(keys);
+        Result result = prepaymentService.run(update);
+        if (result.rowCount() != 1) {
+            // No.21 error
+            throw new ServiceException("common.invoice.approverupdateerror",
+                    invoice.map(PrepaymentPendingInvoices::getInvoiceNumber).get());
+        } else {
+            context.setCompleted();
+        }
+
+    }
+
+    @On(event = SetRejectedStatusContext.CDS_NAME)
+    public void setCompletedStatus(SetRejectedStatusContext context) {
+        // get invoice
+        CqnAnalyzer analyzer = CqnAnalyzer.create(context.getModel());
+        Map<String, Object> keys = analyzer.analyze(context.getCqn()).targetKeys();
+
+        Optional<PrepaymentPendingInvoices> invoice = prepaymentService
+                .run(Select.from(PrepaymentPendingInvoices_.class).matching(keys))
+                .first(PrepaymentPendingInvoices.class);
+        // error if not found
+        invoice.orElseThrow(() -> new ServiceException("404009", keys.toString()));
+
+        // error if entity data is still in draft
+        if (invoice.map(PrepaymentPendingInvoices::getIsActiveEntity).get() == false) {
+            throw new ServiceException("400005");
+        }
+
+        // update invoice approval
+        Map<String, Object> approvals = new HashMap<>();
+        approvals.put("StateOfApplication", "0");
+        approvals.put("AuthorizedUserID", context.getApprover());
+        approvals.put("AuthorizedDateTime", Instant.now());
+
+        // Update Approver without draft
+        CqnUpdate update = Update.entity(PrepaymentPendingInvoices_.class).data(approvals).matching(keys);
+        Result result = prepaymentService.run(update);
+        if (result.rowCount() != 1) {
+            // No.21 error
+            throw new ServiceException("common.invoice.approverupdateerror",
+                    invoice.map(PrepaymentPendingInvoices::getInvoiceNumber).get());
+        } else {
+            context.setCompleted();
+        }
+
     }
 
 }

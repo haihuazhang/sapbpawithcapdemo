@@ -51,7 +51,7 @@ sap.ui.define(
                     // call custom create action for creating 10 initial records(initialLinesCreation)
                     var promise = new Promise((resolve, reject) => {
                         var creationContext = that.getView().getModel().bindContext("/initialLinesCreation(...)");
-                        creationContext.setParameter("lines", 1);
+                        creationContext.setParameter("lines", 2);
                         creationContext.setParameter("InitCreationUUID", InitialCreationUUID);
                         creationContext.execute("$auto", false, null, /*bReplaceWithRVC*/false).then(() => {
                             resolve(creationContext);
@@ -64,7 +64,7 @@ sap.ui.define(
                     }).catch((oError) => {
                         MessageBox.error(oError);
                     }).finally(() => {
-                        that.byId("NewTable").setBusy(true);
+                        that.byId("NewTable").setBusy(false);
                     });
                 }
             },
@@ -112,11 +112,23 @@ sap.ui.define(
                         }).catch(() => {
 
                         }).finally(() => {
-                            that.byId("NewTable").setBusy(true);
+                            that.byId("NewTable").setBusy(false);
 
                         });
                     }
                 }
+            },
+            onPressCreate: function name(params) {
+                //   createDraftWithInitUUID
+                var oBindingList = this.getExtensionAPI().byId("NewTable").getContent().getRowBinding();
+                this.editFlow.createDocument(oBindingList, {
+                    createAtEnd: true,
+                    creationMode: "Inline",
+                    data: {
+                        "Currency_code": "JPY",
+                        "InitCreationUUID": this.getModel("local").getProperty("/InitialCreationUUID")
+                    }
+                });
             },
             onPressNavToAttachments: function (oEvent) {
                 // var sPath = oEvent.getSource().getBindingContext().getPath().substring(1);

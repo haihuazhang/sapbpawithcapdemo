@@ -21,6 +21,14 @@
                         anchor="DataFieldForAction::PrePayment.send_to_approval"
                         requiresSelection="false"
                     />
+                    <macrosTable:Action
+                        key="customCreate"
+                        text="{i18n>btnCreate}"
+                        press=".onPressCreate"
+                        placement="After"
+                        anchor="DataFieldForAction::PrePayment.send_to_approval"
+                        requiresSelection="false"
+                    />
                 </macros:actions>
                 <macros:columns>
                     <macrosTable:Column header="{i18n>colAttachment}" key="FirstColumnKey"

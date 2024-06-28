@@ -1,0 +1,12 @@
+<mvc:View xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m"
+    xmlns:macros="sap.fe.macros"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    controllerName="prepaymentpendinginvsapproval.ext.main.Main">
+    <Page id="Main" showHeader="false">
+        <content>
+            <macros:Form metaPath="@com.sap.vocabularies.UI.v1.FieldGroup#Details"
+                id="myResponsiveForm">
+            </macros:Form>
+        </content>
+    </Page>
+</mvc:View>

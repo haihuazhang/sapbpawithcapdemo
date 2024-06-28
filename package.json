@@ -8,7 +8,9 @@
     "app/createprepayinvoice",
     "app/createprepaymentapply",
     "app/cprepaymentpendinginvs",
-    "app/project1"
+    "app/project1",
+    "app/project2",
+    "app/prepaymentpendinginvsapproval"
   ],
   "devDependencies": {
     "@sap/cds-dk": "^7",
